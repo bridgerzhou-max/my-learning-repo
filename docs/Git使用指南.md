@@ -516,6 +516,35 @@ fix: 改错别字、加了三道题、更新了 README、删了旧文件
 
 拆成四个提交，每个一行字，以后每一条都能单独看懂。
 
+### 一个真实的反例
+
+刚上手时很容易写出这种说明：
+
+```
+uptodate
+```
+
+当时自己看得懂，三个月后再看只能猜——是文件 up to date 了？分支 up to date 了？还是整个仓库？
+
+同一件事，换个写法就清楚了：
+
+| 当时的写法 | 更好的写法 |
+|---|---|
+| `uptodate` | `更新技能现状表：C 语言 → C++` |
+| `update` | `docs: 补充 Git 指南第 6 章` |
+| `1` | `fix: 修正 hello world 的输出` |
+
+规律只有一句：**写「改了什么」，不要写「我做完了」。**
+
+### 已经 push 出去了，说明还能改吗
+
+| 情况 | 能改吗 | 怎么做 |
+|---|---|---|
+| 刚 commit，还没 push | ✅ 能 | `git commit --amend -m "新说明"` |
+| 已经 push 出去 | ❌ 别改 | 历史推上去后再改就需要 force push，风险大于收益 |
+
+第二条要记住：**提交说明写得不好，不影响代码，看得懂就行**；为了一个措辞去 force push，反而可能把仓库搞坏。
+
 ---
 
 ## 7. 报错急救手册
@@ -676,6 +705,47 @@ git branch -M main         # 改名成 main
 git remote -v                              # 看现在是什么地址
 git remote set-url origin https://github.com/用户名/仓库名.git
 ```
+
+---
+
+### 报错 12：弹出 `git-credential-manager.exe - 系统错误：字符串绑定无效`／push 时反复要求浏览器登录
+
+**它在说什么**：`git-credential-manager.exe`（Git 的凭据管理器，简称 GCM）在把登录令牌交给 Git 的那一刻自己崩了一下。「字符串绑定无效」是 .NET 程序的底层报错（对应 Windows 的 "The parameter is incorrect"），和你的命令写得对不对没有关系。
+
+**先别慌：大概率已经成功了。**
+
+按这个顺序确认：
+
+```bash
+git status              # 出现 "Your branch is up to date with 'origin/main'" 就是推上去了
+git log --oneline -1    # 看最新提交是不是你刚写的那条
+```
+
+本地和远程一致，就说明这个弹窗只是「报错噪音」，推送其实完成了。
+
+**怎么办**：
+
+1. 点「确定」关掉对话框；
+2. 跑 `git status` 或 `git log` 看结果，不要立刻重复敲 `git push`；
+3. 只有确认远程没更新时，才重新 `git push` 一次——GCM 通常已经把令牌存进 Windows 凭据管理器，第二次不会再弹窗。
+
+**确认令牌到底存没存住**：
+
+```bash
+cmdkey /list | findstr github
+```
+
+看到 `LegacyGeneric:target=git:https://github.com` 就说明存好了，以后 `push` 不会再问。
+
+**如果每次都弹**，说明令牌没存住，可以换成最简单的存储方式：
+
+```bash
+git config --global credential.helper store
+```
+
+登录一次后令牌会明文存在 `~/.git-credentials`。**只在自己的电脑上这么做**，公用电脑不要用。
+
+**如果还不行**，最省事的退路是改用 GitHub Desktop 推送：它的登录和命令行是两套独立机制，桌面端能推，就说明账号和仓库权限都没问题。
 
 ---
 
