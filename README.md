@@ -57,7 +57,7 @@ my-learning-repo/
 
 | 方向 | 现状 |
 | --- | --- |
-| C 语言 | 跟课程进度，能独立写小程序 |
+| C++ | 跟课程进度，能独立写小程序 |
 | 数据结构与算法 | 刚起步，配合课程走 |
 | Git / GitHub | 会用 GitHub Desktop，也能用 `status`/`add`/`commit`/`push` |
 | 前端 | 未开始，计划大一下接触 HTML / CSS |
