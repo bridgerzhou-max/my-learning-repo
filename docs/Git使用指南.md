@@ -984,6 +984,41 @@ Thumbs.db
 **Q：多久提交一次算正常？**
 按「一件事一次」来。一天三次和一周一次都可以，关键是每一次都能说清做了什么。
 
+**Q：`raw.githubusercontent.com` 打不开，那怎么核对线上的内容？**
+
+网页域名和 git 用的是两套通道。`github.com` 的网页、`raw.githubusercontent.com` 的原始文件走 CDN，国内经常被限速或直接断掉；而 `git push` / `git fetch` 走的是 443 端口的 smart HTTP，往往反而通。
+
+所以核对线上内容**不用浏览器，用 git 自己就够了**：
+
+```bash
+git fetch origin                        # 把远程最新状态拉到本地（不动你的工作区）
+git show origin/main:README.md          # 直接看「远程那份」文件的内容
+git show origin/main:docs/Git使用指南.md | head -60
+git log origin/main --oneline -3        # 远程最近三个提交
+git diff HEAD origin/main               # 本地与远程到底差了什么
+```
+
+`origin/main:路径` 这个写法是关键：冒号前面是分支，后面是文件路径，读的是**远程那一份**，不是你工作区里的。
+
+这几条命令只走 git 协议，不受网页域名影响，而且 `fetch` 过一次之后离线也能看。比开浏览器快，也比看网页缓存的旧版本准——GitHub 网页的提交数经常会滞后几分钟。
+
+**Q：那 `git status` 说 up to date，就一定和线上一样吗？**
+
+不一定。`git status` 比较的是**本地分支和本地记录的 `origin/main`**（也就是最后一次 `fetch`/`push` 时记下的远程状态），不是实时去问 GitHub。
+
+想确认真的同步了，用这个：
+
+```bash
+git fetch origin                        # 先更新远程状态记录
+git status                              # 再看，这时候才准
+```
+
+或者一条命令直连查：
+
+```bash
+git ls-remote origin refs/heads/main    # 直接问 GitHub 现在 main 指向哪个提交
+```
+
 ---
 
 > 最后一句：这份文档不用背。真正常用的就 [第 12 章速查表](#12-速查表) 那十几行，其余的都是「遇到了再查」。
